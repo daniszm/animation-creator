@@ -9,7 +9,7 @@ class TestS3Storage(unittest.TestCase):
     #A arrange
     self.there_is_source_file("files/test.txt")
     s3 = self.there_is_s3_resource_available()
-    storage = S3MediaStorage(s3, os.getenv('APP_BUCKET_NAME'))
+    storage = S3MediaStorage(s3, os.getenv('182452-nikolya25'))
 
     #A act
     to_be_upl = open("files/test.txt", 'rb')
