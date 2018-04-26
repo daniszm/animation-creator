@@ -1,9 +1,12 @@
 import boto3
 import os
-from flask import Flask, render_template, request
-
+from flask import Flask
+from flask import render_template, request, flash
+from media.s3_storage import S3MediaStorage
 
 app = Flask(__name__)
+
+s3 = boto3.resource('s3')
 media_storage = S3MediaStorage(s3, os.getenv('APP_BUCKET_NAME'))
 
 @app.route("/")
@@ -19,7 +22,7 @@ def handle_upload():
         return redirect(request.url)
     uploaded_file = request.files['uploaded_file']
     media_storage.store (
-        dest="/uploaded/%s" %uploaded_file.filename,
+        dest="/uploaded/%s" % uploaded_file.filename,
         source=uploaded_file
     )
     return "OK"

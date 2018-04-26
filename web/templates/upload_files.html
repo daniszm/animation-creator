@@ -1,8 +1,8 @@
 {% extends 'layout.html' %}
 
 {% block body %}
-    <form action="/upload" method="POST" enctype=multipart/form-data>
+    <form action="{{ url_for('handle_upload') }}" method="POST" enctype=multipart/form-data>
       <input name="uploaded_file" type="file">
-      <button type="submit">Add photo</button>
+      <button type="submit">Add</button>
     </form>
 {% endblock %}
