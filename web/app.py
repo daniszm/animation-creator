@@ -3,7 +3,7 @@ import os
 from flask import Flask
 from flask import render_template, request, flash
 from media.s3_storage import S3MediaStorage
-from media.name_generator import 
+from media.name_generator import generate_name
 
 app = Flask(__name__)
 
@@ -27,13 +27,13 @@ def handle_upload():
         dest=file_ref,
         source=uploaded_file
     )
-    orders.load(current_user()).add_file(file_ref)
+#    orders.load(current_user()).add_file(file_ref)
     return "OK"
 
-@app.route(/"proceed")
-def proceed():
-  order = orders.load(current_user())
-  handler.handle(order,anapshot())
+#@app.route("/proceed")
+#def proceed():
+#  order = orders.load(current_user())
+#  handler.handle(order,anapshot())
 
 @app.route("/make-animation")
 def make_animation():
