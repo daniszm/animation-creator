@@ -1,0 +1,14 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<h3>Gdzie wyslać twoją mową animację?</h3>
+  <ul>
+  {% for photo in photos %}
+    <li>{{photo}}</li>
+  {% endfor%}
+  </ul>
+  <form method="POST" action="/proceed">
+    <input name="email" type="email"/>
+    <button type="submit">Wyślij tam</button>
+  </form>
+{% endblock %}
