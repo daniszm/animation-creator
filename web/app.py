@@ -1,48 +1,59 @@
-import boto3
-import os
-
 from flask import Flask
-from flask import render_template, request, flash
+from flask import render_template
+from flask import request, redirect, url_for
 from media.s3_storage import S3MediaStorage
+import os
+import boto3
+import json
 
-app = Flask(__name__)
+#class FilePhotoStack:
+    #def add_pending_photo(self, target_name) 
+#otworz plik, dopisz do pliku, zamknij plik
 
+
+
+class InMemoryPhotoStack:
+    def __init__(self):
+       self.photos_list = []
+    def get_all_photos(self):
+       return self.photos_list
+    def add_pending_photo(self, target_name):
+       self.photos_list.append(target_name) 
 s3 = boto3.resource('s3')
-media_storage = S3MediaStorage(s3, os.getenv('APP_BUCKET_NAME'))
+storage = S3MediaStorage(s3, os.getenv('APP_BUCKET_NAME'))
+app = Flask(__name__)
+photo_stack = InMemoryPhotoStack()
+sqs = boto3.resource('sqs', region_name="eu-central-1")
+pending_orders = sqs.get_queue_by_name(QueueName='JUSTYNAsQUEUE')
 
 @app.route("/")
 def hello():
-    return render_template(
-      'upload_files.html'
-    )
+    return render_template('upload_form.html')
+
 @app.route("/upload", methods=['POST'])
-def handle_upload():
-  if 'uploaded_file' not in request.files:
-    flash('No file part')
-    return redirect(request.url)
+def make_upload():
+    if 'filetoupload' not in request.files:
+      return 'fail'
+    myfile = request.files['filetoupload']
+    target_name = "uploads/%s"%myfile.filename
+    storage.store(dest=target_name, source=myfile)
+    photo_stack.add_pending_photo(target_name)
+    return 'ok'
 
-  uploaded_file = request.files['uploaded_file']
-  file_ref = generate_name(uploaded_file.filename)
-  media_storage.store(
-     dest=file_ref,
-     source=uploaded_file
-  )
+@app.route("/order")
+def order():
+    return render_template('order.html', photos=photo_stack.get_all_photos())
 
-  orders.load(current_user()).add_photo(file_ref)
-
-  return "OK"
-
-@app.route("/proceed")
+@app.route("/proceed", methods=['POST'])
 def proceed():
-  orders = orders.load(current_user())
-  handler.handle(order.snapshot())
+    order_ani_request = {'email': request.form['email'], 'photos': photo_stack.get_all_photos()}
+    pending_orders.send_message(MessageBody=json.dumps(order_ani_request))
 
-@app.route("/prepare")
-def prepare():
-  return render_template(
-    'prepare.html',
-    invitation="the only limit is yourself"
-  )
+    return redirect(url_for('order'))
 
+@app.route("/list")
+def list():
+    mydata=[{"name": "Jakub"}, {"name": "Justyna"}]
+    return render_template('peoples.html', peoples=mydata)
 if __name__ == '__main__':
   app.run(host="0.0.0.0", port=8080, debug=True)
