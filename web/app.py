@@ -1,4 +1,4 @@
-import boto3, os, json, uuid, imageio
+import boto3, os, json, uuid
 from flask import Flask
 from flask import render_template, request, flash
 from media.s3_storage import S3MediaStorage
